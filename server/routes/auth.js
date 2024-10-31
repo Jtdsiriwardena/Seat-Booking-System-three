@@ -3,7 +3,6 @@ const { body, validationResult } = require('express-validator');
 const { signup, login, googleLogin, updateInternId } = require('../controllers/authController');
 const router = express.Router();
 
-// Signup route with validation and sanitization
 router.post(
     '/signup',
     [
@@ -18,12 +17,11 @@ router.post(
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        next(); // Proceed to the signup controller if validation passes
+        next();
     },
     signup
 );
 
-// Login route with validation and sanitization
 router.post(
     '/login',
     [
@@ -35,15 +33,15 @@ router.post(
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        next(); // Proceed to the login controller if validation passes
+        next();
     },
     login
 );
 
-// Google login route (assuming no user input to validate)
+
 router.post('/google-login', googleLogin);
 
-// Update intern ID route with validation and sanitization
+
 router.post(
     '/update-intern-id',
     [
@@ -55,7 +53,7 @@ router.post(
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-        next(); // Proceed to the update intern ID controller if validation passes
+        next();
     },
     updateInternId
 );
