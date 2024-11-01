@@ -13,18 +13,19 @@ const Admin = () => {
     const rowsPerPage = 8;
     const token = localStorage.getItem('token');
 
+    const compareByConfirmation = (a, b) => {
+        if (a.isConfirmed === b.isConfirmed) return 0;
+        return a.isConfirmed ? 1 : -1;
+    };
+
     useEffect(() => {
         const fetchBookings = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/bookings/all`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
                 
-                const sortedBookings = response.data.sort((a, b) => {
-                    return a.isConfirmed === b.isConfirmed ? 0 : a.isConfirmed ? 1 : -1;
-                });
-
+                const sortedBookings = response.data.sort(compareByConfirmation);
                 setBookings(sortedBookings);
             } catch (error) {
                 console.error('Error fetching bookings:', error.response ? error.response.data : error.message);
@@ -43,14 +44,9 @@ const Admin = () => {
 
             const updatedBookings = bookings.map(booking =>
                 booking._id === bookingId ? { ...booking, isConfirmed: true } : booking
-            );
+            ).sort(compareByConfirmation);
 
-       
-            const sortedUpdatedBookings = updatedBookings.sort((a, b) => {
-                return a.isConfirmed === b.isConfirmed ? 0 : a.isConfirmed ? 1 : -1;
-            });
-
-            setBookings(sortedUpdatedBookings);
+            setBookings(updatedBookings);
         } catch (error) {
             console.error('Error confirming booking:', error.response ? error.response.data : error.message);
             alert('Failed to confirm booking.');
@@ -84,38 +80,32 @@ const Admin = () => {
     };
 
     return (
-        <div className="bg-gray-200 min-h-screen">
-            <aside className="ad-sidebar-unique">
-                <img src={logo} alt="logo" className="ad-sidebar-logo-unique" />
-                <nav className="ad-sidebar-nav-unique">
-                    <Link to="/admin"  className={`px-4 py-2 rounded-tr-full rounded-br-full transition-colors duration-200 ${window.location.pathname === '/admin' ? 'bg-blue-600 text-white' : 'hover:bg-slate-600 hover:text-white'}`}>
-                        <FontAwesomeIcon icon={faClipboardList} className="ad-sidebar-icon" />
-                        Bookings
+        <div className="admin-container bg-gray-200 min-h-screen">
+            <aside className="admin-sidebar">
+                <img src={logo} alt="logo" className="admin-logo" />
+                <nav className="admin-nav">
+                    <Link to="/admin" className={`admin-link ${window.location.pathname === '/admin' ? 'active' : ''}`}>
+                        <FontAwesomeIcon icon={faClipboardList} className="admin-icon" /> Bookings
                     </Link>
-                    <Link to="/interns" className="ad-sidebar-link-unique">
-                        <FontAwesomeIcon icon={faUser} className="ad-sidebar-icon" />
-                        Interns
+                    <Link to="/interns" className="admin-link">
+                        <FontAwesomeIcon icon={faUser} className="admin-icon" /> Interns
                     </Link>
-                    <Link to="/add-holiday" className="ad-sidebar-link-unique">
-                        <FontAwesomeIcon icon={faPlusCircle} className="ad-sidebar-icon" />
-                        Add Holiday
+                    <Link to="/add-holiday" className="admin-link">
+                        <FontAwesomeIcon icon={faPlusCircle} className="admin-icon" /> Add Holiday
                     </Link>
-                    <Link to="/attendance" className="ad-sidebar-link-unique">
-                        <FontAwesomeIcon icon={faCalendar} className="ad-sidebar-icon" />
-                        Daily Attendance
+                    <Link to="/attendance" className="admin-link">
+                        <FontAwesomeIcon icon={faCalendar} className="admin-icon" /> Daily Attendance
                     </Link>
-                    <Link to="/intern-attendance" className="ad-sidebar-link-unique">
-                        <FontAwesomeIcon icon={faClipboardList} className="ad-sidebar-icon" />
-                        Intern Attendance
+                    <Link to="/intern-attendance" className="admin-link">
+                        <FontAwesomeIcon icon={faClipboardList} className="admin-icon" /> Intern Attendance
                     </Link>
                 </nav>
-                <button className="ad-sidebar-logout-button-unique">
-                    <FontAwesomeIcon icon={faSignOutAlt} className="ad-sidebar-icon" />
-                    Log Out
+                <button className="admin-logout-btn">
+                    <FontAwesomeIcon icon={faSignOutAlt} className="admin-icon" /> Log Out
                 </button>
             </aside>
 
-            <div className="table-content p-6">
+            <main className="admin-main p-6">
                 <h1 className="text-2xl font-bold mb-4">Bookings</h1>
 
                 <input
@@ -123,36 +113,36 @@ const Admin = () => {
                     placeholder="Search by First Name or Last Name"
                     value={searchQuery}
                     onChange={handleSearch}
-                    className="p-2 mb-4 border rounded w-full"
+                    className="search-input p-2 mb-4 border rounded w-full"
                 />
 
                 {currentRows.length > 0 ? (
-                    <table className="min-w-full table-auto bg-white shadow-lg rounded-lg">
+                    <table className="table-auto bg-white shadow-lg rounded-lg w-full">
                         <thead>
                             <tr className="bg-blue-200">
-                                <th className="px-4 py-2">Intern ID</th>
-                                <th className="px-4 py-2">First Name</th>
-                                <th className="px-4 py-2">Last Name</th>
-                                <th className="px-4 py-2">Email</th>
-                                <th className="px-4 py-2">Date</th>
-                                <th className="px-4 py-2">Seat Number</th>
-                                <th className="px-4 py-2">Special Request</th>
-                                <th className="px-4 py-2">Action</th>
+                                <th className="table-header">Intern ID</th>
+                                <th className="table-header">First Name</th>
+                                <th className="table-header">Last Name</th>
+                                <th className="table-header">Email</th>
+                                <th className="table-header">Date</th>
+                                <th className="table-header">Seat Number</th>
+                                <th className="table-header">Special Request</th>
+                                <th className="table-header">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentRows.map((booking) => (
                                 <tr key={booking._id} className="hover:bg-gray-100">
-                                    <td className="border px-4 py-2">{booking.intern ? booking.intern.internID : 'N/A'}</td>
-                                    <td className="border px-4 py-2">{booking.intern ? booking.intern.firstName : 'N/A'}</td>
-                                    <td className="border px-4 py-2">{booking.intern ? booking.intern.lastName : 'N/A'}</td>
-                                    <td className="border px-4 py-2">{booking.intern ? booking.intern.email : 'N/A'}</td>
-                                    <td className="border px-4 py-2">{new Date(booking.date).toLocaleDateString()}</td>
-                                    <td className="border px-4 py-2">{booking.seatNumber}</td>
-                                    <td className="border px-4 py-2">{booking.specialRequest || 'None'}</td>
-                                    <td className="border px-4 py-2">
+                                    <td className="table-cell">{booking.intern ? booking.intern.internID : 'N/A'}</td>
+                                    <td className="table-cell">{booking.intern ? booking.intern.firstName : 'N/A'}</td>
+                                    <td className="table-cell">{booking.intern ? booking.intern.lastName : 'N/A'}</td>
+                                    <td className="table-cell">{booking.intern ? booking.intern.email : 'N/A'}</td>
+                                    <td className="table-cell">{new Date(booking.date).toLocaleDateString()}</td>
+                                    <td className="table-cell">{booking.seatNumber}</td>
+                                    <td className="table-cell">{booking.specialRequest || 'None'}</td>
+                                    <td className="table-cell">
                                         <button
-                                            className={`py-1 px-3 rounded ${booking.isConfirmed ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'} hover:opacity-90`}
+                                            className={`confirm-btn ${booking.isConfirmed ? 'bg-blue-500' : 'bg-green-500'}`}
                                             onClick={() => confirmBooking(booking._id)}
                                             disabled={booking.isConfirmed}
                                         >
@@ -167,23 +157,15 @@ const Admin = () => {
                     <p className="text-center text-gray-500">No bookings available</p>
                 )}
 
-                <div className="flex justify-between mt-4">
-                    <button
-                        className="bg-gray-500 text-white py-1 px-4 rounded hover:bg-gray-600"
-                        onClick={prevPage}
-                        disabled={currentPage === 1}
-                    >
+                <div className="pagination-controls flex justify-between mt-4">
+                    <button className="pagination-btn" onClick={prevPage} disabled={currentPage === 1}>
                         Previous
                     </button>
-                    <button
-                        className="bg-gray-500 text-white py-1 px-4 rounded hover:bg-gray-600"
-                        onClick={nextPage}
-                        disabled={currentPage === Math.ceil(filteredBookings.length / rowsPerPage)}
-                    >
+                    <button className="pagination-btn" onClick={nextPage} disabled={currentPage === Math.ceil(filteredBookings.length / rowsPerPage)}>
                         Next
                     </button>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };
